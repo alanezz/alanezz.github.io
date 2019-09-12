@@ -18,3 +18,15 @@ main>.container {
 code {
     font-size: 80%;
 }
+
+.profile-img {
+    border-radius: 50%;
+    width: 70%;
+    height: 90%;
+    margin: 10px;
+}
+
+.profile-card {
+    padding-left: 0px;
+    padding-right: 0px;
+}
