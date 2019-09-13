@@ -22,11 +22,46 @@ code {
 .profile-img {
     border-radius: 50%;
     width: 70%;
-    height: 90%;
-    margin: 10px;
+    margin-top: 10px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .profile-card {
     padding-left: 0px;
     padding-right: 0px;
+    padding-bottom: 0px;
+}
+
+.footer-profile {
+    margin-bottom: 0px;
+}
+
+.profile-title {
+    padding-left: 10px;
+}
+
+.text-profile {
+    margin-bottom: 0px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.text-profile-bottom {
+    margin-bottom: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.container-main {
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+
+.text-social {
+    margin-bottom: 0px;
+}
+
+.text-social-bottom {
+    margin-bottom: 10px;
 }
