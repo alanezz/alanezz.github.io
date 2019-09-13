@@ -65,3 +65,7 @@ code {
 .text-social-bottom {
     margin-bottom: 10px;
 }
+
+.card-text {
+    text-align: justify;
+}
