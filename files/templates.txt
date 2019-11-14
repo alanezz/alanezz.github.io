@@ -1,0 +1,16 @@
+Templates of the Wikidata Benchmark with API Calls:
+
+T2:
+Original:
+
+SELECT * WHERE {
+  ?x ?p01 ?y .
+  ?x ?p02 z
+}
+
+Adapted:
+
+SELECT * WHERE {
+  ?x ?p01 ?y .
+  SERVICE <api/{?p01}/{?y}>{ (["z"]) AS (?z) }
+}
