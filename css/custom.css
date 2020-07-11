@@ -69,3 +69,8 @@ code {
 .card-text {
     text-align: justify;
 }
+
+.card-footer {
+    padding-left: 10px;
+    padding-right: 10px;
+}
