@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Neon Asteroids</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: linear-gradient(to bottom, #010108 0%, #0a0010 70%, #1a002a 100%);
+            font-family: 'Courier New', Courier, monospace;
+            cursor: crosshair;
+        }
+
+        #ui-layer {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #66ffaa;
+            z-index: 10;
+            pointer-events: none;
+            text-shadow: 0 0 8px #66ffaa;
+            user-select: none;
+        }
+
+        #score-board {
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            text-align: right;
+            color: #ff00ff;
+            z-index: 10;
+            pointer-events: none;
+            text-shadow: 0 0 10px #ff00ff;
+            user-select: none;
+        }
+        #score-val { font-size: 3rem; font-weight: bold; display: block; }
+        #score-label { font-size: 1rem; letter-spacing: 4px; }
+
+        h1 {
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin: 0;
+            background: -webkit-linear-gradient(#eee, #333);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p { font-size: 0.8rem; opacity: 0.8; color: #ffffff; }
+
+        #click-hint {
+            position: absolute;
+            bottom: 30px;
+            width: 100%;
+            text-align: center;
+            color: #ff0000;
+            opacity: 0.8;
+            font-size: 1rem;
+            letter-spacing: 4px;
+            animation: pulse 1s infinite alternate;
+            pointer-events: none;
+            text-shadow: 0 0 10px #ff0000;
+            user-select: none;
+        }
+
+        @keyframes pulse { 
+            from { opacity: 0.5; transform: scale(1); } 
+            to { opacity: 1; transform: scale(1.05); } 
+        }
+    </style>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+    <div id="ui-layer">
+        <h1>NEON DEFENDER V9.3</h1>
+        <p>Warning: Close Proximity Spawns</p>
+    </div>
+
+    <div id="score-board">
+        <span id="score-label">SCORE</span>
+        <span id="score-val">0</span>
+    </div>
+
+    <div id="click-hint">[ CLICK TO DESTROY ]</div>
+
+    <script>
+        // --- 1. CONFIGURACIÓN ---
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.Fog(0x1a002a, 40, 180); 
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 500);
+        camera.position.set(0, 2, 10);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.body.appendChild(renderer.domElement);
+
+        const raycaster = new THREE.Raycaster();
+        const mouseForRaycast = new THREE.Vector2(); 
+        let score = 0;
+        const scoreEl = document.getElementById('score-val');
+
+        // --- 2. ILUMINACIÓN ---
+        const ambientLight = new THREE.AmbientLight(0x404040); 
+        scene.add(ambientLight);
+        const keyLight = new THREE.DirectionalLight(0xffffff, 2);
+        keyLight.position.set(-3, 5, 5);
+        scene.add(keyLight);
+        const rimLight = new THREE.DirectionalLight(0xff00ff, 3);
+        rimLight.position.set(0, -1, -5);
+        scene.add(rimLight);
+
+        // --- 3. UTILIDADES ---
+        const edgeMatBase = new THREE.LineBasicMaterial({ color: 0x88ffaa, linewidth: 1 });
+        function addWireframe(mesh, threshold = 15, colorStr = null) {
+            let mat = edgeMatBase;
+            if (colorStr) mat = new THREE.LineBasicMaterial({ color: colorStr, linewidth: 1 });
+            const edgesGeo = new THREE.EdgesGeometry(mesh.geometry, threshold);
+            const edges = new THREE.LineSegments(edgesGeo, mat);
+            edges.raycast = () => {}; 
+            mesh.add(edges);
+        }
+
+        const commonMatSettings = { transparent: true, opacity: 0.4, flatShading: true, side: THREE.DoubleSide, shininess: 90 };
+        const headMat = new THREE.MeshPhongMaterial({ ...commonMatSettings, color: 0x00cc66, emissive: 0x003311 });
+        const noseMat = new THREE.MeshPhongMaterial({ ...commonMatSettings, color: 0x66ffaa, emissive: 0x228855 });
+        const eyesMat = new THREE.MeshPhongMaterial({ ...commonMatSettings, color: 0xff0000, emissive: 0x550000 });
+        const mouthMat = new THREE.MeshPhongMaterial({ ...commonMatSettings, color: 0xffff00, emissive: 0x555500 });
+
+        // --- 4. EXPLOSIONES ---
+        const debrisList = [];
+        const debrisGeo = new THREE.TetrahedronGeometry(0.3, 0);
+        const debrisMat = new THREE.MeshBasicMaterial({ color: 0xffaa00, wireframe: true });
+        function createExplosion(position) {
+            for (let i = 0; i < 12; i++) {
+                const shard = new THREE.Mesh(debrisGeo, debrisMat);
+                shard.position.copy(position);
+                shard.userData.velocity = new THREE.Vector3((Math.random()-0.5)*0.8, (Math.random()-0.5)*0.8, (Math.random()-0.5)*0.8);
+                scene.add(shard);
+                debrisList.push(shard);
+            }
+        }
+
+        // --- 5. FONDO ---
+        const gridSize = 64;
+        const gridCanvas = document.createElement('canvas');
+        gridCanvas.width = gridSize; gridCanvas.height = gridSize;
+        const gridCtx = gridCanvas.getContext('2d');
+        gridCtx.fillStyle = '#000000'; gridCtx.fillRect(0,0,gridSize,gridSize);
+        gridCtx.strokeStyle = '#ff00ff'; gridCtx.lineWidth = 2;
+        gridCtx.beginPath();
+        gridCtx.moveTo(0, gridSize/2); gridCtx.lineTo(gridSize, gridSize/2);
+        gridCtx.moveTo(gridSize/2, 0); gridCtx.lineTo(gridSize/2, gridSize);
+        gridCtx.stroke();
+        const roadTexture = new THREE.CanvasTexture(gridCanvas);
+        roadTexture.wrapS = THREE.RepeatWrapping; roadTexture.wrapT = THREE.RepeatWrapping;
+        roadTexture.repeat.set(80, 80); 
+        const roadMat = new THREE.MeshBasicMaterial({ map: roadTexture, transparent: true, opacity: 0.8, side: THREE.DoubleSide });
+        const road = new THREE.Mesh(new THREE.PlaneGeometry(300, 300), roadMat);
+        road.rotation.x = -Math.PI / 2; road.position.y = -3.5;
+        scene.add(road);
+
+        const starGeo = new THREE.BufferGeometry();
+        const starVertices = [];
+        for (let i = 0; i < 3000; i++) starVertices.push(THREE.MathUtils.randFloatSpread(400), THREE.MathUtils.randFloatSpread(200)+50, THREE.MathUtils.randFloatSpread(400));
+        starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+        scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xaaaaaa, size: 0.4, fog: false })));
+
+        // --- PLANETAS SÓLIDOS Y VIBRANTES ---
+        const planets = [];
+        const planetGeoBase = new THREE.IcosahedronGeometry(10, 0);
+        const planetColors = [0x00ffff, 0xff00ff, 0xffaa00, 0x5500ff, 0x33ff33, 0x0088ff];
+        
+        for(let i = 0; i < 6; i++) {
+            const color = planetColors[i];
+            const mat = new THREE.MeshStandardMaterial({ 
+                color: color, emissive: color, emissiveIntensity: 0.5, 
+                roughness: 0.4, metalness: 0.1, flatShading: true, transparent: false, opacity: 1.0 
+            });
+            const p = new THREE.Mesh(planetGeoBase, mat);
+            p.position.set(THREE.MathUtils.randFloatSpread(300), THREE.MathUtils.randFloatSpread(120) + 50, -120 - Math.random() * 100);
+            p.scale.setScalar(THREE.MathUtils.randFloat(0.8, 1.8));
+
+            if (i % 2 === 0) {
+                const ringGeo = new THREE.RingGeometry(12, 16, 32);
+                const ringMat = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.4, side: THREE.DoubleSide, fog: false });
+                const ring = new THREE.Mesh(ringGeo, ringMat);
+                const ringEdges = new THREE.LineSegments(new THREE.EdgesGeometry(ringGeo), new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.8 }));
+                ring.add(ringEdges);
+                ring.rotation.x = Math.PI / 2 + Math.random() * 0.5; 
+                ring.rotation.y = Math.random() * 0.5;
+                p.add(ring);
+            }
+            addWireframe(p, 20, 0xffffff);
+            scene.add(p);
+            planets.push(p);
+        }
+
+        // --- 6. ASTEROIDES CON RESPAWN CERCANO ---
+        let asteroids = []; 
+        const asteroidGeo = new THREE.DodecahedronGeometry(1, 0); 
+        const asteroidMat = new THREE.MeshPhongMaterial({ color: 0xaaaaaa, emissive: 0x222222, flatShading: true });
+
+        function spawnAsteroid(startAtBack = false) {
+            const ast = new THREE.Mesh(asteroidGeo, asteroidMat);
+            
+            let zPos = THREE.MathUtils.randFloatSpread(300) - 50; // Posición normal inicial
+            
+            // --- LÓGICA DE RESPAWN AJUSTADA ---
+            if (startAtBack) {
+                // ANTES: -180 a -230
+                // AHORA: -90 a -140 (Mucho más cerca, justo en el borde de la niebla visible)
+                zPos = -90 - Math.random() * 50; 
+                
+                // Iniciamos con escala 0 para que "crezca" y no aparezca de golpe
+                ast.scale.set(0.1, 0.1, 0.1);
+                ast.userData.isGrowing = true; // Bandera para animar el crecimiento
+                ast.userData.targetScale = THREE.MathUtils.randFloat(0.8, 3.0);
+            } else {
+                // Inicio normal (setup)
+                ast.scale.multiplyScalar(THREE.MathUtils.randFloat(0.8, 3.0)); 
+            }
+            // ----------------------------------
+
+            ast.position.set(THREE.MathUtils.randFloatSpread(300), THREE.MathUtils.randFloatSpread(150) + 20, zPos);
+            ast.userData.velocity = new THREE.Vector3(THREE.MathUtils.randFloatSpread(0.1), THREE.MathUtils.randFloatSpread(0.05), THREE.MathUtils.randFloatSpread(0.1));
+            
+            if(startAtBack) ast.userData.velocity.z += 0.05; // Empuje extra hacia adelante
+            
+            ast.userData.rotSpeed = new THREE.Vector3(Math.random()*0.03, Math.random()*0.03, Math.random()*0.03);
+            addWireframe(ast, 20, 0xff0000); 
+            scene.add(ast);
+            asteroids.push(ast);
+        }
+        for (let i = 0; i < 50; i++) spawnAsteroid(false);
+
+        // --- 7. CARA ---
+        const headGroup = new THREE.Group();
+        headGroup.position.y = 1; 
+        headGroup.traverse(child => { child.raycast = () => {}; });
+        scene.add(headGroup);
+        const headMesh = new THREE.Mesh(new THREE.IcosahedronGeometry(2.2, 1), headMat);
+        headMesh.scale.set(0.95, 1.5, 1.0); addWireframe(headMesh); headGroup.add(headMesh);
+        const nose = new THREE.Mesh(new THREE.ConeGeometry(0.3, 0.6, 4), noseMat);
+        nose.position.set(0, -0.2, 2.4); nose.rotation.set(-0.1, Math.PI/4, 0); addWireframe(nose); headGroup.add(nose);
+        const eyeGeo = new THREE.BoxGeometry(0.6, 0.2, 0.2);
+        const eyeLeft = new THREE.Mesh(eyeGeo, eyesMat); eyeLeft.position.set(-0.7, 0.4, 2.1); addWireframe(eyeLeft); headGroup.add(eyeLeft);
+        const eyeRight = new THREE.Mesh(eyeGeo, eyesMat); eyeRight.position.set(0.7, 0.4, 2.1); addWireframe(eyeRight); headGroup.add(eyeRight);
+        const mouth = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.1, 0.2), mouthMat);
+        mouth.position.set(0, -1.0, 2.1); addWireframe(mouth); headGroup.add(mouth);
+        const surpriseGeo = new THREE.SphereGeometry(0.1, 32, 32);
+        const surpriseMat = new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0, wireframe: true });
+        const surpriseEffect = new THREE.Mesh(surpriseGeo, surpriseMat);
+        headGroup.add(surpriseEffect);
+        let isSurpriseActive = false;
+
+        // --- 8. INTERACCIÓN ---
+        let mouseTrackX = 0, mouseTrackY = 0;
+        const windowHalfX = window.innerWidth / 2;
+        const windowHalfY = window.innerHeight / 2;
+
+        document.addEventListener('mousemove', (event) => {
+            mouseTrackX = (event.clientX - windowHalfX);
+            mouseTrackY = (event.clientY - windowHalfY);
+            mouseForRaycast.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouseForRaycast.y = - (event.clientY / window.innerHeight) * 2 + 1;
+        });
+
+        document.addEventListener('mousedown', () => {
+            raycaster.setFromCamera(mouseForRaycast, camera);
+            const intersects = raycaster.intersectObjects(asteroids);
+
+            if (intersects.length > 0) {
+                const hitAsteroid = intersects[0].object;
+                createExplosion(hitAsteroid.position);
+                score += 100;
+                scoreEl.innerText = score;
+                scene.remove(hitAsteroid);
+                const index = asteroids.indexOf(hitAsteroid);
+                if (index > -1) asteroids.splice(index, 1);
+                spawnAsteroid(true);
+                const flash = new THREE.PointLight(0xffaa00, 10, 20);
+                flash.position.copy(hitAsteroid.position);
+                scene.add(flash);
+                setTimeout(() => scene.remove(flash), 50);
+            }
+            if (!isSurpriseActive) {
+                isSurpriseActive = true;
+                surpriseEffect.scale.set(1, 1, 1);
+                surpriseEffect.material.opacity = 0.9;
+                keyLight.intensity = 8; 
+                setTimeout(() => { keyLight.intensity = 2; }, 100);
+            }
+        });
+
+        // --- 9. ANIMACIÓN ---
+        function animate() {
+            requestAnimationFrame(animate);
+            const time = Date.now() * 0.001;
+            roadTexture.offset.y -= 0.015; 
+            planets.forEach(p => { p.rotation.y += 0.002; p.rotation.z += 0.001; });
+
+            asteroids.forEach(ast => {
+                // Movimiento
+                ast.position.add(ast.userData.velocity);
+                ast.rotation.x += ast.userData.rotSpeed.x;
+                ast.rotation.y += ast.userData.rotSpeed.y;
+
+                // Animación de crecimiento (Spawn suave)
+                if (ast.userData.isGrowing) {
+                    // Interpolación lineal simple hacia el tamaño objetivo
+                    const target = ast.userData.targetScale;
+                    // Crecemos un 5% de la diferencia por frame
+                    ast.scale.lerp(new THREE.Vector3(target, target, target), 0.05);
+                    // Si ya casi llegó, dejamos de calcular
+                    if (Math.abs(ast.scale.x - target) < 0.1) ast.userData.isGrowing = false;
+                }
+
+                // Límites y reciclaje
+                if(ast.position.x > 250) ast.position.x = -250;
+                if(ast.position.x < -250) ast.position.x = 250;
+                
+                // Si se va muy al fondo, lo reciclamos y le damos nueva posición X
+                if(ast.position.z > 50) { 
+                    ast.position.z = -200; 
+                    ast.position.x = THREE.MathUtils.randFloatSpread(300);
+                    // También reiniciamos su escala y crecimiento si queremos efecto al reciclar (opcional)
+                    // ast.scale.set(0.1, 0.1, 0.1); ast.userData.isGrowing = true; 
+                } 
+            });
+
+            for (let i = debrisList.length - 1; i >= 0; i--) {
+                const shard = debrisList[i];
+                shard.position.add(shard.userData.velocity);
+                shard.rotation.x += 0.2; shard.rotation.z += 0.2;
+                shard.scale.multiplyScalar(0.92);
+                if (shard.scale.x < 0.01) { scene.remove(shard); debrisList.splice(i, 1); }
+            }
+
+            if (Math.floor(time) % 2 === 0) {
+                eyesMat.color.setHex(0xff0000); eyesMat.emissive.setHex(0x550000);
+                mouthMat.color.setHex(0xffff00); mouthMat.emissive.setHex(0x555500);
+            } else {
+                eyesMat.color.setHex(0xffff00); eyesMat.emissive.setHex(0x555500);
+                mouthMat.color.setHex(0xff0000); mouthMat.emissive.setHex(0x550000);
+            }
+
+            headGroup.rotation.y += 0.05 * ((mouseTrackX * 0.0008) - headGroup.rotation.y);
+            headGroup.rotation.x += 0.05 * ((mouseTrackY * 0.0008) - headGroup.rotation.x);
+
+            if (isSurpriseActive) {
+                surpriseEffect.scale.multiplyScalar(1.15);
+                surpriseEffect.material.opacity -= 0.02;
+                if (surpriseEffect.material.opacity <= 0) isSurpriseActive = false;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        animate();
+    </script>
+</body>
+</html>
