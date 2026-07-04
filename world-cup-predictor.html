@@ -1,0 +1,571 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Octavos 2026 · Predicciones</title>
+</head>
+<body>
+<style>
+  :root{
+    --bg:#f9f9f7; --surface:#fcfcfb;
+    --ink:#0b0b0b; --ink2:#52514e; --muted:#898781;
+    --line:#e1e0d9; --ring:rgba(11,11,11,.10);
+    --accent:#256abf; --accent-ink:#184f95;
+    --chip-bg:rgba(42,120,214,.10);
+    --track:#cde2fb; --fill:#256abf;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0d0d0d; --surface:#1a1a19;
+      --ink:#ffffff; --ink2:#c3c2b7; --muted:#898781;
+      --line:#2c2c2a; --ring:rgba(255,255,255,.10);
+      --accent:#3987e5; --accent-ink:#9ec5f4;
+      --chip-bg:rgba(57,135,229,.16);
+      --track:#0d366b; --fill:#3987e5;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0d0d0d; --surface:#1a1a19;
+    --ink:#ffffff; --ink2:#c3c2b7; --muted:#898781;
+    --line:#2c2c2a; --ring:rgba(255,255,255,.10);
+    --accent:#3987e5; --accent-ink:#9ec5f4;
+    --chip-bg:rgba(57,135,229,.16);
+    --track:#0d366b; --fill:#3987e5;
+  }
+  :root[data-theme="light"]{
+    --bg:#f9f9f7; --surface:#fcfcfb;
+    --ink:#0b0b0b; --ink2:#52514e; --muted:#898781;
+    --line:#e1e0d9; --ring:rgba(11,11,11,.10);
+    --accent:#256abf; --accent-ink:#184f95;
+    --chip-bg:rgba(42,120,214,.10);
+    --track:#cde2fb; --fill:#256abf;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+    -webkit-text-size-adjust:100%;
+  }
+  .wrap{max-width:1020px; margin:0 auto; padding:28px 18px 48px}
+
+  /* ── Masthead ── */
+  .masthead{padding:8px 0 26px}
+  .eyebrow{
+    font-size:11px; font-weight:650; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--accent-ink); margin:0 0 10px;
+  }
+  h1{font-size:clamp(26px,5.5vw,36px); line-height:1.12; margin:0 0 12px; text-wrap:balance}
+  .lede{max-width:62ch; font-size:15.5px; line-height:1.6; color:var(--ink2); margin:0 0 14px}
+  .mastmeta{font-size:13px; line-height:1.7; color:var(--muted); margin:0}
+  .mastmeta strong{color:var(--ink2); font-weight:600}
+
+  /* ── Grid de tarjetas ── */
+  .grid{display:grid; grid-template-columns:1fr; gap:18px; align-items:start}
+  @media (min-width:880px){ .grid{grid-template-columns:1fr 1fr; gap:22px} }
+
+  .card{
+    background:var(--surface); border:1px solid var(--ring); border-radius:8px;
+    padding:18px 18px 6px;
+  }
+  .cmeta{
+    font-size:11px; font-weight:600; letter-spacing:.09em; text-transform:uppercase;
+    color:var(--muted); margin:0 0 14px;
+  }
+
+  /* ── Marcador ── */
+  .board{margin:0 0 14px}
+  .brow{display:grid; grid-template-columns:30px 1fr 3ch; gap:10px; align-items:center; padding:3px 0}
+  .board.et .brow{grid-template-columns:30px 1fr 3ch 3ch}
+  .bhead{padding:0 0 2px}
+  .bhead span{font-size:11px; font-weight:600; letter-spacing:.06em; color:var(--muted); text-align:right}
+  .flag{font-size:20px; line-height:1}
+  .tname{font-size:16.5px; font-weight:450; color:var(--ink2); min-width:0}
+  .g{font-size:22px; font-weight:600; text-align:right; color:var(--ink2); font-variant-numeric:tabular-nums}
+  .adv .tname{font-weight:700; color:var(--ink)}
+  .adv .g{color:var(--ink)}
+
+  /* ── Chips ── */
+  .chips{display:flex; flex-wrap:wrap; gap:8px; margin:0 0 16px}
+  .chip{
+    font-size:12.5px; line-height:1; padding:6px 11px; border-radius:999px;
+    border:1px solid var(--line); color:var(--ink2);
+  }
+  .chip-adv{background:var(--chip-bg); border-color:transparent; color:var(--accent-ink); font-weight:650}
+
+  /* ── Confianza ── */
+  .conf{margin:0 0 6px}
+  .confhead{display:flex; justify-content:space-between; align-items:baseline; margin:0 0 6px}
+  .confhead .lbl{font-size:12.5px; color:var(--ink2)}
+  .confhead .val{font-size:13.5px; font-weight:650; color:var(--ink)}
+  .meter{height:6px; border-radius:3px; background:var(--track); overflow:hidden}
+  .meter i{display:block; height:100%; border-radius:3px; background:var(--fill)}
+
+  /* ── Justificación ── */
+  details{border-top:1px solid var(--line); margin-top:14px}
+  summary{
+    list-style:none; cursor:pointer; display:flex; align-items:center; gap:8px;
+    padding:13px 2px; font-size:13.5px; font-weight:650; color:var(--ink);
+  }
+  summary::-webkit-details-marker{display:none}
+  summary:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:4px}
+  .chev{
+    width:8px; height:8px; flex:none;
+    border-right:1.5px solid var(--muted); border-bottom:1.5px solid var(--muted);
+    transform:rotate(-45deg); transition:transform .15s ease;
+  }
+  details[open] .chev{transform:rotate(45deg)}
+  .jbody{padding:2px 2px 18px}
+  .jbody h3{
+    font-size:11px; font-weight:650; letter-spacing:.11em; text-transform:uppercase;
+    color:var(--muted); margin:20px 0 6px;
+  }
+  .jbody h3:first-child{margin-top:6px}
+  .jbody p{font-size:14.5px; line-height:1.65; color:var(--ink2); margin:0 0 4px}
+  .tblock{margin:14px 0 0; padding:12px 14px; border:1px solid var(--line); border-radius:6px}
+  .tblock h4{display:flex; align-items:center; gap:8px; font-size:14.5px; font-weight:700; color:var(--ink); margin:0 0 8px}
+  .sub{font-size:12px; font-weight:650; color:var(--ink); margin:12px 0 4px}
+  .sub:first-of-type{margin-top:0}
+  .mlist{list-style:none; margin:2px 0 0; padding:0}
+  .mlist li{
+    font-size:13.5px; line-height:1.5; color:var(--ink2);
+    padding:6px 0; border-top:1px solid var(--line); font-variant-numeric:tabular-nums;
+  }
+  .mlist li:first-child{border-top:none; padding-top:2px}
+
+  footer{
+    margin-top:36px; padding-top:18px; border-top:1px solid var(--line);
+    font-size:12.5px; line-height:1.7; color:var(--muted);
+  }
+  @media (prefers-reduced-motion:reduce){ .chev{transition:none} }
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <p class="eyebrow">Copa Mundial de la FIFA 2026 · Eliminación directa</p>
+    <h1>Octavos de final: las predicciones</h1>
+    <p class="lede">Ocho cruces entre el 4 y el 7 de julio, analizados uno por uno por un
+    agente de IA que consulta cuotas de mercado, historial directo, forma reciente y
+    noticias de última hora de cada selección. Cada tarjeta trae la justificación
+    completa, tópico por tópico.</p>
+    <p class="mastmeta">
+      <strong>4 llaves se definen en los 90′ y 4 en la prórroga; ninguna llega a los penales.</strong><br>
+      Los marcadores son a 90 minutos; cuando hay prórroga se muestra también el acumulado a 120′.<br>
+      Generado el 4 de julio de 2026 · Experimento con IA — no es una recomendación de apuestas.
+    </p>
+  </header>
+
+  <main class="grid">
+
+    <!-- 1 · Canadá vs Marruecos -->
+    <article class="card">
+      <p class="cmeta">Sábado 4 de julio · NRG Stadium, Houston</p>
+      <div class="board">
+        <div class="brow bhead"><span></span><span></span><span>90′</span></div>
+        <div class="brow"><span class="flag">🇨🇦</span><span class="tname">Canadá</span><span class="g">1</span></div>
+        <div class="brow adv"><span class="flag">🇲🇦</span><span class="tname">Marruecos</span><span class="g">2</span></div>
+      </div>
+      <div class="chips"><span class="chip">Se define en los 90′</span><span class="chip chip-adv">Avanza Marruecos</span></div>
+      <div class="conf">
+        <div class="confhead"><span class="lbl">Confianza del modelo</span><span class="val">62 %</span></div>
+        <div class="meter" role="meter" aria-valuenow="62" aria-valuemin="0" aria-valuemax="100" aria-label="Confianza del modelo: 62 %"><i style="width:62%"></i></div>
+      </div>
+      <details>
+        <summary><span class="chev"></span>Justificación completa</summary>
+        <div class="jbody">
+          <h3>Cuotas de mercado</h3>
+          <p>El mercado 1X2 se inclina con claridad por Marruecos: PMU cotiza a Canadá en 5.25, el empate en 3.30 y a Marruecos en 1.72. Eso lo posiciona como claro favorito en los 90 minutos, aunque deja cierto margen de empate en una llave de eliminación directa.</p>
+          <h3>Historial directo</h3>
+          <p>El historial favorece a Marruecos: lidera la serie absoluta con 3 triunfos, 1 empate y ninguna derrota, con un global de 10-4 en goles. Los dos cruces más recientes: Marruecos 4-0 Canadá en un amistoso de 2016 y Marruecos 2-1 Canadá en el Mundial 2022 (1 de diciembre de 2022).</p>
+          <div class="tblock">
+            <h4><span class="flag">🇨🇦</span>Canadá</h4>
+            <p class="sub">Forma actual</p>
+            <p>Ha mostrado resiliencia e impulso en el torneo: empate con Bosnia y Herzegovina, goleada 6-0 a Catar, derrota ajustada con Suiza y triunfo 1-0 sobre Sudáfrica en la eliminación directa. Las noticias son mixtas: Ismaël Koné quedó fuera por una lesión grave en la pierna que requiere cirugía tras el partido con Catar, y Alphonso Davies vuelve a estar disponible aunque su titularidad es una decisión abierta. No se reportan sanciones. La duda de Davies y la baja de Koné reducen el techo del mediocampo y de la transición, aun con la moral alta tras eliminar a Sudáfrica.</p>
+            <p class="sub">Partidos previos</p>
+            <ul class="mlist">
+              <li>Canadá 1-1 Bosnia y Herzegovina (12 jun)</li>
+              <li>Canadá 6-0 Catar (18 jun)</li>
+              <li>Suiza 2-1 Canadá (24 jun)</li>
+              <li>Sudáfrica 0-1 Canadá (28 jun)</li>
+            </ul>
+          </div>
+          <div class="tblock">
+            <h4><span class="flag">🇲🇦</span>Marruecos</h4>
+            <p class="sub">Forma actual</p>
+            <p>Invicto en el torneo: empató con Brasil, venció a Escocia y a Haití, y eliminó a Países Bajos en dieciseisavos (registrado 3-4 y descrito en las noticias como una victoria por penales). Las últimas noticias son comparativamente positivas: sin sancionados; Chadi Riad fue duda por un golpe pero volvió al último entrenamiento y apunta a estar disponible. Brahim Díaz sigue siendo el eje del plan ofensivo aunque todavía no marca, y el tono del cuerpo técnico es confiado pero cauto.</p>
+            <p class="sub">Partidos previos</p>
+            <ul class="mlist">
+              <li>Brasil 1-1 Marruecos (13 jun)</li>
+              <li>Escocia 0-1 Marruecos (19 jun)</li>
+              <li>Marruecos 4-2 Haití (24 jun)</li>
+              <li>Países Bajos 3-4 Marruecos (30 jun · por penales según las noticias)</li>
+            </ul>
+          </div>
+          <h3>Conclusión</h3>
+          <p>La condición de anfitrión de Canadá y su presión atlética deberían mantener el partido competitivo, sobre todo si Davies aporta, pero el conjunto de la evidencia apunta a Marruecos: favorito del mercado, invicto, con mejor parte médica y dominador histórico del cruce. Canadá puede lastimar en transición o a balón parado, pero la profundidad ofensiva y la mayor disponibilidad de Marruecos hacen de su triunfo en 90 minutos la predicción más sólida.</p>
+        </div>
+      </details>
+    </article>
+
+    <!-- 2 · Paraguay vs Francia -->
+    <article class="card">
+      <p class="cmeta">Sábado 4 de julio · Lincoln Financial Field, Filadelfia</p>
+      <div class="board">
+        <div class="brow bhead"><span></span><span></span><span>90′</span></div>
+        <div class="brow"><span class="flag">🇵🇾</span><span class="tname">Paraguay</span><span class="g">0</span></div>
+        <div class="brow adv"><span class="flag">🇫🇷</span><span class="tname">Francia</span><span class="g">2</span></div>
+      </div>
+      <div class="chips"><span class="chip">Se define en los 90′</span><span class="chip chip-adv">Avanza Francia</span></div>
+      <div class="conf">
+        <div class="confhead"><span class="lbl">Confianza del modelo</span><span class="val">77 %</span></div>
+        <div class="meter" role="meter" aria-valuenow="77" aria-valuemin="0" aria-valuemax="100" aria-label="Confianza del modelo: 77 %"><i style="width:77%"></i></div>
+      </div>
+      <details>
+        <summary><span class="chev"></span>Justificación completa</summary>
+        <div class="jbody">
+          <h3>Cuotas de mercado</h3>
+          <p>El mercado es extremadamente desigual: Unibet cotiza a Francia en 1.18, el empate en 7.5 y a Paraguay en 19.0. Esos precios implican que se espera que Francia resuelva en tiempo reglamentario con mucha frecuencia, así que las cuotas respaldan con fuerza su triunfo y no una sorpresa.</p>
+          <h3>Historial directo</h3>
+          <p>Francia domina la serie: 5 cruces, 3 triunfos franceses, 2 empates y ninguno de Paraguay, con un global de 14-4. Además ganó los dos duelos mundialistas: 7-3 en 1958 y 1-0 con gol de oro en los octavos de 1998. El cruce más reciente fue Francia 5-0 Paraguay en 2017.</p>
+          <div class="tblock">
+            <h4><span class="flag">🇵🇾</span>Paraguay</h4>
+            <p class="sub">Forma actual</p>
+            <p>Llega con impulso y moral tras eliminar a Alemania, pero su camino fue irregular: cayó con claridad ante Estados Unidos y necesitó penales contra Alemania. Las últimas noticias son mixtas: Julio Enciso está disponible tras unas molestias y Diego Gómez vuelve de su sanción, pero el central Omar Alderete está descartado o muy en duda por una lesión muscular, lo que probablemente obligue a José Canale a entrar en la zaga. Esa ausencia defensiva pesa mucho frente al ataque liderado por Mbappé.</p>
+            <p class="sub">Partidos previos</p>
+            <ul class="mlist">
+              <li>Estados Unidos 4-1 Paraguay (13 jun)</li>
+              <li>Turquía 0-1 Paraguay (20 jun)</li>
+              <li>Paraguay 0-0 Australia (26 jun)</li>
+              <li>Alemania 1-1 Paraguay (29 jun · Paraguay avanzó 4-3 por penales)</li>
+            </ul>
+          </div>
+          <div class="tblock">
+            <h4><span class="flag">🇫🇷</span>Francia</h4>
+            <p class="sub">Forma actual</p>
+            <p>Llega en un estado excelente: ganó los cuatro partidos registrados y marca con facilidad. La nota negativa: Aurélien Tchouaméni es baja por una lesión en el muslo y Manu Koné apunta a reemplazarlo. No hay sancionados de peso, el esquema de Deschamps es estable y el probable ataque de Mbappé, Dembélé, Olise y Barcola está en gran forma tras el doblete de Mbappé y la gran actuación de Olise ante Suecia.</p>
+            <p class="sub">Partidos previos</p>
+            <ul class="mlist">
+              <li>Francia 3-1 Senegal (16 jun)</li>
+              <li>Francia 3-0 Irak (22 jun)</li>
+              <li>Noruega 1-4 Francia (26 jun)</li>
+              <li>Francia 3-0 Suecia (30 jun · dieciseisavos)</li>
+            </ul>
+          </div>
+          <h3>Conclusión</h3>
+          <p>El orden, la confianza y la resiliencia en los penales hacen peligroso a Paraguay, más con Enciso disponible y el regreso de Diego Gómez. Pero Francia tiene un perfil goleador muy superior, dominio histórico del cruce, un respaldo abrumador del mercado y menos problemas de plantilla pese a la baja de Tchouaméni. Con Paraguay debilitado en la zaga por la probable ausencia de Alderete, Francia es la elección más clara para resolverlo dentro de los 90 minutos.</p>
+        </div>
+      </details>
+    </article>
+
+    <!-- 3 · Brasil vs Noruega -->
+    <article class="card">
+      <p class="cmeta">Domingo 5 de julio · MetLife Stadium, East Rutherford</p>
+      <div class="board">
+        <div class="brow bhead"><span></span><span></span><span>90′</span></div>
+        <div class="brow adv"><span class="flag">🇧🇷</span><span class="tname">Brasil</span><span class="g">2</span></div>
+        <div class="brow"><span class="flag">🇳🇴</span><span class="tname">Noruega</span><span class="g">1</span></div>
+      </div>
+      <div class="chips"><span class="chip">Se define en los 90′</span><span class="chip chip-adv">Avanza Brasil</span></div>
+      <div class="conf">
+        <div class="confhead"><span class="lbl">Confianza del modelo</span><span class="val">58 %</span></div>
+        <div class="meter" role="meter" aria-valuenow="58" aria-valuemin="0" aria-valuemax="100" aria-label="Confianza del modelo: 58 %"><i style="width:58%"></i></div>
+      </div>
+      <details>
+        <summary><span class="chev"></span>Justificación completa</summary>
+        <div class="jbody">
+          <h3>Cuotas de mercado</h3>
+          <p>El mercado 1X2 hace a Brasil favorito claro pero no aplastante: Tipico lo cotiza en 1.77, el empate en 3.80 y a Noruega en 4.50. Eso implica que Brasil es el ganador más probable en los 90 minutos, sin dejar de respetar la amenaza de sorpresa noruega.</p>
+          <h3>Historial directo</h3>
+          <p>El historial es inusualmente favorable a Noruega: en 4 cruces absolutos suma 2 triunfos y 2 empates, y Brasil nunca le ha ganado. Destacan el 4-2 amistoso de 1997 y el 2-1 en el Mundial de Francia 1998; el último cruce fue un 1-1 el 16 de agosto de 2006. Son duelos antiguos, así que pesan como advertencia más que como factor decisivo.</p>
+          <div class="tblock">
+            <h4><span class="flag">🇧🇷</span>Brasil</h4>
+            <p class="sub">Forma actual</p>
+            <p>Llega invicto: 3 triunfos y 1 empate, 9 goles a favor y solo 2 en contra. Venció 2-1 a Japón en dieciseisavos con gol de Gabriel Martinelli en el descuento, un envión anímico. Lo negativo es la probable baja de Lucas Paquetá por una lesión muscular en el isquiotibial izquierdo, que resta creatividad. Raphinha volvió a entrenar tras molestias en el muslo derecho pero podría no llegar como titular, y Neymar está disponible aunque con minutos dosificados tras sus problemas de pantorrilla. Sin sancionados.</p>
+            <p class="sub">Partidos previos</p>
+            <ul class="mlist">
+              <li>Brasil 1-1 Marruecos (13 jun · grupo C)</li>
+              <li>Brasil 3-0 Haití (19 jun)</li>
+              <li>Escocia 0-3 Brasil (24 jun)</li>
+              <li>Brasil 2-1 Japón (29 jun · dieciseisavos)</li>
+            </ul>
+          </div>
+          <div class="tblock">
+            <h4><span class="flag">🇳🇴</span>Noruega</h4>
+            <p class="sub">Forma actual</p>
+            <p>También llega lanzada: 3 triunfos y 1 derrota, 10 goles a favor pero 8 en contra. Su ataque, liderado por Erling Haaland, ha sido excelente: volvió tras descansar ante Francia y marcó en el 2-1 sobre Costa de Marfil; los reportes lo sitúan con cinco goles en el torneo. La moral es altísima tras el primer triunfo noruego en eliminación directa de un Mundial. La duda es defensiva: 8 goles en contra en 4 partidos, incluidos 4 ante Francia. Julian Ryerson es duda de última hora; si no llega, Marcus Holmgren Pedersen enfrentaría a Vinícius Júnior en el lateral derecho, un desajuste potencialmente clave. Sin sancionados.</p>
+            <p class="sub">Partidos previos</p>
+            <ul class="mlist">
+              <li>Irak 1-4 Noruega (16 jun · grupo I)</li>
+              <li>Noruega 3-2 Senegal (22 jun)</li>
+              <li>Noruega 1-4 Francia (26 jun)</li>
+              <li>Costa de Marfil 1-2 Noruega (30 jun · dieciseisavos)</li>
+            </ul>
+          </div>
+          <h3>Conclusión</h3>
+          <p>El invicto histórico de Noruega ante Brasil y el ataque de Haaland hacen peligrosa la llave, y la baja de Paquetá recorta el margen. Aun así, el equilibrio general de Brasil es superior: solo 2 goles en contra en 4 partidos, profundidad ofensiva con Vinícius, Martinelli, Raphinha o Rayan y quizá Neymar, y el mercado también se inclina con claridad por él. Las concesiones defensivas noruegas y la posible baja de Ryerson frente a la amenaza brasileña por la izquierda inclinan el partido hacia Brasil en tiempo reglamentario.</p>
+        </div>
+      </details>
+    </article>
+
+    <!-- 4 · México vs Inglaterra -->
+    <article class="card">
+      <p class="cmeta">Domingo 5 de julio · Estadio Azteca, Ciudad de México</p>
+      <div class="board et">
+        <div class="brow bhead"><span></span><span></span><span>90′</span><span>120′</span></div>
+        <div class="brow"><span class="flag">🇲🇽</span><span class="tname">México</span><span class="g">1</span><span class="g">1</span></div>
+        <div class="brow adv"><span class="flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span><span class="tname">Inglaterra</span><span class="g">1</span><span class="g">2</span></div>
+      </div>
+      <div class="chips"><span class="chip">Se define en la prórroga</span><span class="chip chip-adv">Avanza Inglaterra</span></div>
+      <div class="conf">
+        <div class="confhead"><span class="lbl">Confianza del modelo</span><span class="val">54 %</span></div>
+        <div class="meter" role="meter" aria-valuenow="54" aria-valuemin="0" aria-valuemax="100" aria-label="Confianza del modelo: 54 %"><i style="width:54%"></i></div>
+      </div>
+      <details>
+        <summary><span class="chev"></span>Justificación completa</summary>
+        <div class="jbody">
+          <h3>Cuotas de mercado</h3>
+          <p>Los últimos precios 1X2 de Unibet hacen de Inglaterra la favorita del mercado a 2.48, con México y el empate ambos a 3.20. Eso implica que se la ve como el equipo más fuerte, pero no por mucho; que México y el empate paguen lo mismo también apunta a un cruce cerrado antes que a un triunfo inglés claro en 90 minutos.</p>
+          <h3>Historial directo</h3>
+          <p>Inglaterra tiene una clara ventaja histórica: 6 triunfos, 2 de México y 1 empate en 9 cruces absolutos. Ganó los últimos cuatro con un global de 12-1: 3-1 en 2010, 4-0 en 2001, 2-0 en 1997 y 3-0 en 1986. El único antecedente mundialista también fue inglés: 2-0 en 1966. El último triunfo mexicano fue 1-0 en 1985.</p>
+          <div class="tblock">
+            <h4><span class="flag">🇲🇽</span>México</h4>
+            <p class="sub">Forma actual</p>
+            <p>Atraviesa un torneo sobresaliente: cuatro triunfos en cuatro partidos y portería imbatida. Las noticias son mayormente positivas: sin sancionados ni bajas confirmadas, aunque Roberto Alvarado (molestia en el muslo izquierdo) y Gilberto Mora (molestia en la rodilla izquierda) están en observación, sin riesgo aparente de perderse el duelo. Javier Aguirre sigue al mando y la moral es alta tras el 2-0 a Ecuador; el técnico describe al plantel como muy motivado y enfocado. A más largo plazo, el arquero Luis Ángel Malagón sigue fuera por una lesión de Aquiles.</p>
+            <p class="sub">Partidos previos</p>
+            <ul class="mlist">
+              <li>México 2-0 Sudáfrica (11 jun)</li>
+              <li>México 1-0 Corea del Sur (19 jun)</li>
+              <li>Chequia 0-3 México (25 jun)</li>
+              <li>México 2-0 Ecuador (1 jul)</li>
+            </ul>
+          </div>
+          <div class="tblock">
+            <h4><span class="flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>Inglaterra</h4>
+            <p class="sub">Forma actual</p>
+            <p>Está invicta pero ha sido menos dominante que México en defensa: recibió goles ante Croacia y RD del Congo. Su último resultado fue una remontada 2-1 sobre RD del Congo con doblete tardío de Harry Kane. Noticias mixtas: Declan Rice es duda menor por sobrecarga en el isquiotibial aunque entrenó y se espera que llegue; Reece James sigue siendo duda seria por lesión muscular; Tino Livramento quedó fuera del torneo y hay cierta fragilidad en el lateral derecho. Sin sancionados, Bukayo Saka fue declarado apto y Thomas Tuchel sigue al frente.</p>
+            <p class="sub">Partidos previos</p>
+            <ul class="mlist">
+              <li>Inglaterra 4-2 Croacia (17 jun)</li>
+              <li>Inglaterra 0-0 Ghana (23 jun)</li>
+              <li>Panamá 0-2 Inglaterra (27 jun)</li>
+              <li>Inglaterra 2-1 RD del Congo (1 jul)</li>
+            </ul>
+          </div>
+          <h3>Conclusión</h3>
+          <p>El arco en cero de México, el escenario del Estadio Azteca y su parte médica limpia lo hacen dificilísimo de vencer en 90 minutos. Sin embargo, las cuotas y el historial se inclinan por Inglaterra, y su mayor profundidad ofensiva con Kane, Saka y el banco le da una leve ventaja si el partido se abre al final. La mejor lectura: 1-1 en los 90 y gol decisivo inglés en la prórroga para avanzar 2-1 tras 120 minutos.</p>
+        </div>
+      </details>
+    </article>
+
+    <!-- 5 · Portugal vs España -->
+    <article class="card">
+      <p class="cmeta">Lunes 6 de julio · AT&amp;T Stadium, Dallas</p>
+      <div class="board et">
+        <div class="brow bhead"><span></span><span></span><span>90′</span><span>120′</span></div>
+        <div class="brow"><span class="flag">🇵🇹</span><span class="tname">Portugal</span><span class="g">1</span><span class="g">1</span></div>
+        <div class="brow adv"><span class="flag">🇪🇸</span><span class="tname">España</span><span class="g">1</span><span class="g">2</span></div>
+      </div>
+      <div class="chips"><span class="chip">Se define en la prórroga</span><span class="chip chip-adv">Avanza España</span></div>
+      <div class="conf">
+        <div class="confhead"><span class="lbl">Confianza del modelo</span><span class="val">54 %</span></div>
+        <div class="meter" role="meter" aria-valuenow="54" aria-valuemin="0" aria-valuemax="100" aria-label="Confianza del modelo: 54 %"><i style="width:54%"></i></div>
+      </div>
+      <details>
+        <summary><span class="chev"></span>Justificación completa</summary>
+        <div class="jbody">
+          <h3>Cuotas de mercado</h3>
+          <p>El mercado 1X2 hace a España favorita clara en los 90 minutos: Portugal 4.20, empate 3.45, España 1.83. La inclinación es fuerte, pero el empate paga menos que el triunfo portugués y encaja con una rivalidad reciente llena de tablas; por eso la lectura es España avanzando, más que ganando con comodidad en 90 minutos.</p>
+          <h3>Historial directo</h3>
+          <p>España lidera el historial general, habitualmente listado en 41 cruces: 17 triunfos españoles, 7 portugueses y 17 empates. Los duelos recientes son cerradísimos: 2-2 en la final de la Nations League del 8 de junio de 2025 (Portugal campeón por penales); 0-1 para España el 27 de septiembre de 2022; 1-1 el 2 de junio de 2022; dos 0-0 amistosos en 2021 y 2020; y el 3-3 del Mundial 2018. Todo apunta a un partido estrecho con opciones reales de prórroga.</p>
+          <div class="tblock">
+            <h4><span class="flag">🇵🇹</span>Portugal</h4>
+            <p class="sub">Forma actual</p>
+            <p>Está invicto, pero su rendimiento es más irregular que el español: 2 triunfos y 2 empates, 8 goles a favor y 2 en contra. Las noticias reportan plantel completo y sin sancionados, y no se esperan grandes cambios de Roberto Martínez tras el 2-1 a Croacia. Cristiano Ronaldo apunta a ser titular tras su gol de penal, y Gonçalo Ramos seguiría como carta del banco tras su gol en el 90+4′. La moral es alta tras la remontada, aunque ese partido también mostró que a Portugal se le puede someter.</p>
+            <p class="sub">Partidos previos</p>
+            <ul class="mlist">
+              <li>Portugal 1-1 RD del Congo (17 jun · grupo K)</li>
+              <li>Portugal 5-0 Uzbekistán (23 jun)</li>
+              <li>Colombia 0-0 Portugal (27 jun)</li>
+              <li>Portugal 2-1 Croacia (2 jul · dieciseisavos; empató Ronaldo de penal y Gonçalo Ramos marcó en el descuento)</li>
+            </ul>
+          </div>
+          <div class="tblock">
+            <h4><span class="flag">🇪🇸</span>España</h4>
+            <p class="sub">Forma actual</p>
+            <p>Tiene el perfil actual más sólido: 3 triunfos y 1 empate, 8 goles a favor y ninguno en contra. Su 3-0 a Austria en dieciseisavos fue descrito como su actuación más convincente del torneo, con doblete de Mikel Oyarzabal y gol de Pedro Porro. La parte médica no es perfecta: Nico Williams sería baja por una lesión en el aductor y Yeremy Pino por un problema en el hombro. Lamine Yamal está disponible tras gestión de cargas, y Dani Olmo, Porro y Laporte no reportan problemas serios. Su solidez defensiva y el control del mediocampo le dan ventaja pese a las ausencias ofensivas.</p>
+            <p class="sub">Partidos previos</p>
+            <ul class="mlist">
+              <li>España 0-0 Cabo Verde (15 jun · grupo H)</li>
+              <li>España 4-0 Arabia Saudita (21 jun)</li>
+              <li>Uruguay 0-1 España (26 jun)</li>
+              <li>España 3-0 Austria (2 jul · dieciseisavos)</li>
+            </ul>
+          </div>
+          <h3>Conclusión</h3>
+          <p>El plantel completo y el pedigrí copero de Portugal lo hacen peligroso, y la tendencia del historial desaconseja esperar un dominio español en 90 minutos. Pero España ha sido más limpia en todo el torneo, no ha recibido goles, es favorita del mercado a 1.83 y conserva calidad ofensiva de sobra con Yamal, Olmo, Pedri, Rodri y Oyarzabal pese a las bajas de Nico Williams y Yeremy Pino. Predicción: 1-1 en los 90 y triunfo español 2-1 en la prórroga.</p>
+        </div>
+      </details>
+    </article>
+
+    <!-- 6 · Estados Unidos vs Bélgica -->
+    <article class="card">
+      <p class="cmeta">Lunes 6 de julio · Lumen Field, Seattle</p>
+      <div class="board et">
+        <div class="brow bhead"><span></span><span></span><span>90′</span><span>120′</span></div>
+        <div class="brow"><span class="flag">🇺🇸</span><span class="tname">Estados Unidos</span><span class="g">1</span><span class="g">1</span></div>
+        <div class="brow adv"><span class="flag">🇧🇪</span><span class="tname">Bélgica</span><span class="g">1</span><span class="g">2</span></div>
+      </div>
+      <div class="chips"><span class="chip">Se define en la prórroga</span><span class="chip chip-adv">Avanza Bélgica</span></div>
+      <div class="conf">
+        <div class="confhead"><span class="lbl">Confianza del modelo</span><span class="val">56 %</span></div>
+        <div class="meter" role="meter" aria-valuenow="56" aria-valuemin="0" aria-valuemax="100" aria-label="Confianza del modelo: 56 %"><i style="width:56%"></i></div>
+      </div>
+      <details>
+        <summary><span class="chev"></span>Justificación completa</summary>
+        <div class="jbody">
+          <h3>Cuotas de mercado</h3>
+          <p>El mercado 1X2 está casi parejo: los mejores precios de BetBrain listan a Estados Unidos en 2.73, el empate en 3.50 y a Bélgica en 2.76, mientras Singapore Pools tiene 2.50 / 3.10 / 2.45. No hay favorito claro en 90 minutos; el empate es un desenlace realista y solo uno de los feeds se inclina levemente por Bélgica.</p>
+          <h3>Historial directo</h3>
+          <p>Bélgica domina el cruce históricamente: Estados Unidos registra 1 triunfo y 6 derrotas, y Bélgica ganó los últimos seis duelos. Resultados recientes destacados: 5-2 en el amistoso del 28 de marzo de 2026, 2-1 en la prórroga en los octavos del Mundial 2014, 4-2 en 2013 y 1-0 en 2011. El único triunfo estadounidense fue el 3-0 del Mundial de 1930.</p>
+          <div class="tblock">
+            <h4><span class="flag">🇺🇸</span>Estados Unidos</h4>
+            <p class="sub">Forma actual</p>
+            <p>Llega con gran impulso: triunfos sobre Paraguay, Australia y Bosnia y Herzegovina, y una sola derrota, 3-2 con Turquía. Noticias mixtas: Christian Pulisic volvió a la titularidad ante Bosnia tras molestias en la pantorrilla y está apto, pero Folarin Balogun está sancionado para este partido por su expulsión en el 2-0 a Bosnia. Balogun es el goleador del equipo en el torneo con tres tantos, así que su baja es un recorte ofensivo mayor; Ricardo Pepi o Haji Wright ocuparían su lugar.</p>
+            <p class="sub">Partidos previos</p>
+            <ul class="mlist">
+              <li>Estados Unidos 4-1 Paraguay (13 jun)</li>
+              <li>Estados Unidos 2-0 Australia (19 jun)</li>
+              <li>Turquía 3-2 Estados Unidos (26 jun)</li>
+              <li>Estados Unidos 2-0 Bosnia y Herzegovina (2 jul · Balogun marcó antes de ser expulsado y Tillman selló el triunfo con 10 hombres)</li>
+            </ul>
+          </div>
+          <div class="tblock">
+            <h4><span class="flag">🇧🇪</span>Bélgica</h4>
+            <p class="sub">Forma actual</p>
+            <p>Arrancó lenta, con empates ante Egipto e Irán, pero tomó ritmo ofensivo: ocho goles entre Nueva Zelanda y Senegal. Sin sancionados. Kevin De Bruyne, Leandro Trossard y Brandon Mechele trabajaron bajo techo el 3 de julio en lo descrito como gestión de cargas, no lesiones confirmadas; Zeno Debast venía siendo duda por un problema en la pierna. Romelu Lukaku está disponible y en racha: marcó saliendo del banco ante Nueva Zelanda y ante Senegal.</p>
+            <p class="sub">Partidos previos</p>
+            <ul class="mlist">
+              <li>Bélgica 1-1 Egipto (15 jun)</li>
+              <li>Bélgica 0-0 Irán (21 jun)</li>
+              <li>Nueva Zelanda 1-5 Bélgica (27 jun)</li>
+              <li>Bélgica 3-2 Senegal (1 jul · remontó un 0-2 con goles de Lukaku y Tielemans, incluido el del 120+5′)</li>
+            </ul>
+          </div>
+          <h3>Conclusión</h3>
+          <p>Pinta cerradísimo en los 90: cuotas casi niveladas y Estados Unidos con buen momento y el envión de su público en Seattle, pero la sanción de Balogun le quita a su delantero más productivo. La ventaja histórica de Bélgica, su mayor experiencia en este cruce de eliminación directa y sus recursos de cierre como Lukaku y Tielemans inclinan la llave después del reglamentario. La lectura: un 1-1 competitivo en los 90 y gol belga decisivo en la prórroga para avanzar 2-1 tras 120 minutos.</p>
+        </div>
+      </details>
+    </article>
+
+    <!-- 7 · Argentina vs Egipto -->
+    <article class="card">
+      <p class="cmeta">Martes 7 de julio · Mercedes-Benz Stadium, Atlanta</p>
+      <div class="board">
+        <div class="brow bhead"><span></span><span></span><span>90′</span></div>
+        <div class="brow adv"><span class="flag">🇦🇷</span><span class="tname">Argentina</span><span class="g">2</span></div>
+        <div class="brow"><span class="flag">🇪🇬</span><span class="tname">Egipto</span><span class="g">1</span></div>
+      </div>
+      <div class="chips"><span class="chip">Se define en los 90′</span><span class="chip chip-adv">Avanza Argentina</span></div>
+      <div class="conf">
+        <div class="confhead"><span class="lbl">Confianza del modelo</span><span class="val">72 %</span></div>
+        <div class="meter" role="meter" aria-valuenow="72" aria-valuemin="0" aria-valuemax="100" aria-label="Confianza del modelo: 72 %"><i style="width:72%"></i></div>
+      </div>
+      <details>
+        <summary><span class="chev"></span>Justificación completa</summary>
+        <div class="jbody">
+          <h3>Cuotas de mercado</h3>
+          <p>El mercado 1X2 favorece con fuerza a Argentina: Unibet la cotiza en 1.38, el empate en 4.9 y a Egipto en 11.0. Eso la posiciona como clara ganadora esperada en 90 minutos, aunque con algo de volatilidad de empate por la forma y el ataque egipcio.</p>
+          <h3>Historial directo</h3>
+          <p>Argentina domina un historial escaso. El único cruce absoluto registrado fue Egipto 0-2 Argentina el 26 de marzo de 2008 en El Cairo. Incluyendo duelos olímpicos y sub-23, la herramienta lista a Argentina ganando todos los cruces conocidos con un global de 9-0, aunque la muestra absoluta es de un solo partido.</p>
+          <div class="tblock">
+            <h4><span class="flag">🇦🇷</span>Argentina</h4>
+            <p class="sub">Forma actual</p>
+            <p>Ganó los cuatro partidos registrados, incluido el 3-2 a Cabo Verde con prórroga. Noticias en general positivas: sin sancionados ni bajas confirmadas al 4 de julio, y Cristian Romero volvió de una molestia en la rodilla, fue titular ante Cabo Verde y marcó el gol decisivo en el alargue. La salvedad es el desgaste: jugó 120 minutos con calor y humedad en Miami el 3 de julio, con Messi todo el partido; Messi, Thiago Almada, Gonzalo Montiel y Nico Paz aparecen en observación, no descartados.</p>
+            <p class="sub">Partidos previos</p>
+            <ul class="mlist">
+              <li>Argentina 3-0 Argelia (17 jun)</li>
+              <li>Argentina 2-0 Austria (22 jun)</li>
+              <li>Jordania 1-3 Argentina (28 jun)</li>
+              <li>Argentina 3-2 Cabo Verde (3 jul · con prórroga)</li>
+            </ul>
+          </div>
+          <div class="tblock">
+            <h4><span class="flag">🇪🇬</span>Egipto</h4>
+            <p class="sub">Forma actual</p>
+            <p>Está invicto en el torneo pero recibió gol en todos los partidos. La moral es altísima tras su primer triunfo en eliminación directa de un Mundial, y Omar Marmoush volvió al once junto a Mohamed Salah. Pero Salah sigue en observación por un problema en el isquiotibial arrastrado desde el partido con Irán: entrenó el 2 de julio, fue titular el 3 y anotó en la tanda, aunque los reportes no lo dan al 100 %. También preocupan el desgarro de Ahmed Fattouh y la fuerte contusión de tobillo de Mohamed Abdelmonem, sin confirmación plena de disponibilidad al 4 de julio.</p>
+            <p class="sub">Partidos previos</p>
+            <ul class="mlist">
+              <li>Bélgica 1-1 Egipto (15 jun)</li>
+              <li>Nueva Zelanda 1-3 Egipto (22 jun)</li>
+              <li>Egipto 1-1 Irán (27 jun)</li>
+              <li>Australia 1-1 Egipto (3 jul · Egipto avanzó 4-2 por penales)</li>
+            </ul>
+          </div>
+          <h3>Conclusión</h3>
+          <p>La mayor jerarquía de Argentina, su torneo perfecto, el precio favorable del mercado y el historial superior la hacen la elección más sólida. La dupla Salah-Marmoush y el envión de Egipto incomodarán, sobre todo con Argentina saliendo de 120 minutos agotadores, pero las concesiones defensivas y las dudas físicas egipcias inclinan el reglamentario hacia Argentina. Predicción: triunfo 2-1 en los 90, sin necesidad de prórroga.</p>
+        </div>
+      </details>
+    </article>
+
+    <!-- 8 · Suiza vs Colombia -->
+    <article class="card">
+      <p class="cmeta">Martes 7 de julio · BC Place, Vancouver</p>
+      <div class="board et">
+        <div class="brow bhead"><span></span><span></span><span>90′</span><span>120′</span></div>
+        <div class="brow"><span class="flag">🇨🇭</span><span class="tname">Suiza</span><span class="g">1</span><span class="g">1</span></div>
+        <div class="brow adv"><span class="flag">🇨🇴</span><span class="tname">Colombia</span><span class="g">1</span><span class="g">2</span></div>
+      </div>
+      <div class="chips"><span class="chip">Se define en la prórroga</span><span class="chip chip-adv">Avanza Colombia</span></div>
+      <div class="conf">
+        <div class="confhead"><span class="lbl">Confianza del modelo</span><span class="val">55 %</span></div>
+        <div class="meter" role="meter" aria-valuenow="55" aria-valuemin="0" aria-valuemax="100" aria-label="Confianza del modelo: 55 %"><i style="width:55%"></i></div>
+      </div>
+      <details>
+        <summary><span class="chev"></span>Justificación completa</summary>
+        <div class="jbody">
+          <h3>Cuotas de mercado</h3>
+          <p>El mercado 1X2 hace de Colombia favorita clara pero no abrumadora: LeoVegas la cotiza en 2.30, el empate en 3.10 y a Suiza en 3.45. Colombia tiene la mayor probabilidad de triunfo, pero los precios también señalan un partido cerrado con chances reales de igualdad tras los 90 minutos.</p>
+          <h3>Historial directo</h3>
+          <p>El historial favorece levemente a Colombia: 4 cruces absolutos, 2 triunfos colombianos, 1 suizo y 1 empate, con ventaja 9-6 en goles. Colombia además ganó los dos últimos duelos completados: 2-0 en el Mundial de 1994 (26 de junio) y 3-1 en un amistoso del 25 de marzo de 2007. La muestra es pequeña y antigua, pero se inclina por Colombia.</p>
+          <div class="tblock">
+            <h4><span class="flag">🇨🇭</span>Suiza</h4>
+            <p class="sub">Forma actual</p>
+            <p>Está invicta y llega con buen envión tras el 2-0 a Argelia en la eliminación directa, con gol temprano de Breel Embolo y otro de Dan Ndoye tras el descanso. Noticias positivas: sin lesiones ni sanciones reportadas al 3 de julio. Denis Zakaria tuvo una pausa cerca del minuto 85 ante Argelia pero no figura como lesionado ni en duda, y Silvan Widmer volvió de un problema de cadera ingresando desde el banco. Murat Yakin mantiene un once estable en torno a Kobel, Akanji, Xhaka, Ndoye y Embolo.</p>
+            <p class="sub">Partidos previos</p>
+            <ul class="mlist">
+              <li>Catar 1-1 Suiza (13 jun)</li>
+              <li>Suiza 4-1 Bosnia y Herzegovina (18 jun)</li>
+              <li>Suiza 2-1 Canadá (24 jun)</li>
+              <li>Suiza 2-0 Argelia (3 jul)</li>
+            </ul>
+          </div>
+          <div class="tblock">
+            <h4><span class="flag">🇨🇴</span>Colombia</h4>
+            <p class="sub">Forma actual</p>
+            <p>También está invicta y ha sido sólida en defensa: un solo gol en contra en cuatro partidos. Venció 1-0 a Ghana en dieciseisavos con gol de Jhon Arias y asistencia de Luis Suárez, quien entró temprano por el lesionado Jhon Córdoba. Lo negativo: Córdoba salió antes del minuto 15, generando una duda física en la delantera; no hay sancionados, Daniel Muñoz volvió al once y Néstor Lorenzo sigue al mando. La moral es buena tras ganar el grupo K, aunque las reseñas tras Ghana fueron tibias y Luis Díaz aún no explota del todo.</p>
+            <p class="sub">Partidos previos</p>
+            <ul class="mlist">
+              <li>Uzbekistán 1-3 Colombia (18 jun)</li>
+              <li>Colombia 1-0 RD del Congo (24 jun)</li>
+              <li>Colombia 0-0 Portugal (27 jun)</li>
+              <li>Colombia 1-0 Ghana (4 jul)</li>
+            </ul>
+          </div>
+          <h3>Conclusión</h3>
+          <p>La plantilla sin bajas y el invicto ofensivo hacen de Suiza un rival muy vivo en los 90 minutos, pero Colombia combina la ventaja del mercado, mejor registro defensivo, leve ventaja histórica y suficiente profundidad ofensiva para sobrellevar la duda de Córdoba. El guion más probable: un empate trabado en los 90, con el control y el banco colombiano decidiéndolo en la prórroga.</p>
+        </div>
+      </details>
+    </article>
+
+  </main>
+
+  <footer>
+    Generado con <strong>World Cup Predictor</strong> (FastAPI + Pydantic AI): un agente
+    predictor con salida estructurada que delega la investigación en un sub-agente con
+    búsqueda web y consulta APIs de cuotas y resultados. Los datos provienen de fuentes
+    públicas y pueden contener imprecisiones; esto es un experimento con IA y no
+    constituye una recomendación de apuestas.
+  </footer>
+</div>
+</body>
+</html>
